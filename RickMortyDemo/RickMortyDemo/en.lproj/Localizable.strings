@@ -1,0 +1,27 @@
+/*
+Localizable.strings
+  RickMortyDemo
+
+ Created by Sergio Rovira on 20/4/24.
+*/
+
+btn_close = "Close";
+btn_retry = "Retry";
+general_error_title = "An error has ocurred";
+general_error_desc = "Something goes wrong, please check your internet connection or try it later";
+
+character_list_title = "Character list";
+character_list_search = "Search by character name...";
+character_list_empty_title = "No content found";
+character_list_empty_desc = "There are no characters with your search criteria, please check the parameters";
+
+character_gender = "Gender";
+character_status = "Status";
+character_specie = "Specie";
+character_type = "Type";
+character_currentLocation = "Current location";
+character_origin = "Origin";
+
+character_filter_title = "Filter";
+character_btn_apply = "APPLY";
+character_btn_clear = "CLEAR FILTERS";

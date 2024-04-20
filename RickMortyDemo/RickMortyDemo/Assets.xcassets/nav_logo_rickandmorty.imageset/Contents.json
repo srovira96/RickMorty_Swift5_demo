@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "nav_logo_rickandmorty.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
