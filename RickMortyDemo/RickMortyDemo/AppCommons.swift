@@ -8,14 +8,6 @@
 import Foundation
 import UIKit
 
-/*// MARK: - FONTS
-let font_regular = "Montserrat-Regular"
-let font_medium = "Montserrat-Medium"
-let font_bold = "Montserrat-Bold"
-let font_black = "Montserrat-Black"
-let font_semi_bold = "Montserrat-SemiBold"*/
-
-
 // MARK: - PROJECT BASE PARAMS
 let URL_BASE					= "https://rickandmortyapi.com/api"
 

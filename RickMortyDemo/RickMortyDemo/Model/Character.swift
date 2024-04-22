@@ -131,17 +131,6 @@ struct Character: Codable, Identifiable {
 		self.type = try container.decode(String.self, forKey: .type)
 	}
 	
-	/*init(from decoder: any Decoder) throws {
-		let container = try decoder.container(keyedBy: CodingKeys.self)
-		if let value = try? container.decodeIfPresent(Int64.self, forKey: .id) {
-			id = value
-		}
-	}
-
-	func encode(to encoder: any Encoder) throws {
-		//
-	}*/
-	
 }
 
 

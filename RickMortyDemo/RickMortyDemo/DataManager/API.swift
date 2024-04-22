@@ -21,21 +21,37 @@ class API: NSObject {
 	}()
 	
 	
-	func get_characterList(page: Int64, filterOptions:[Filter_Character_Types:Any],  completion: @escaping (_ result: AFResult<Data>, _ method: HTTPMethod?, _ error: NSError?, _ array:[String:Any]?) -> Void) {
+	func get_characterList(page: Int64, filterOptions:[Filter_Character_Types:Any?],  completion: @escaping (_ result: AFResult<Data>, _ method: HTTPMethod?, _ error: NSError?, _ array:[String:Any]?) -> Void) {
 		params = [:]
 		
 		params["page"] 		= page
 		
+		
+		
 		for filterOption in filterOptions {
+			
+			guard let filterValue = filterOption.value else {
+				continue
+			}
+			
 			var values:[String] = []
 			switch filterOption.key {
 				case .gender:
-					values = (filterOption.value as? [Character_Gender] ?? []).map({$0.rawValue})
+					guard let castedValues = filterValue as? [Character_Gender] else {
+						continue
+					}
+					values = castedValues.map({$0.rawValue})
 				case .status:
-					values = (filterOption.value as? [Character_Status] ?? []).map({$0.rawValue})
+					guard let castedValues = filterValue as? [Character_Status] else {
+						continue
+					}
+					values = castedValues.map({$0.rawValue})
 				case .text:
-					if let value = filterOption.value as? String, value != "" {
-						values = [value]
+					guard let castedValue = filterValue as? String else {
+						continue
+					}
+					if castedValue != "" {
+						values = [castedValue]
 					}
 					
 			}
@@ -44,10 +60,6 @@ class API: NSObject {
 			}
 		}
 		
-		/*for filterOption in filterOptions {
-			params[filterOption.get_ws_param()] = filterOption.getValue()
-		}
-		*/
 		DataManager.shared.getDataAPI(strAction: WS_CHARACTER_LIST, method: .get, parameters: params) { result, method, error, array in
 			completion(result, method, error, array)
 		}

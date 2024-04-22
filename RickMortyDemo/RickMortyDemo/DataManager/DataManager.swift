@@ -16,7 +16,6 @@ class DataManager {
 	//-----------------------
 	
 	private var manager         : Session
-	//private var params          : [String: Any]     = [:]
 	
 	public static var shared: DataManager = {
 		return DataManager.init()
@@ -40,7 +39,7 @@ class DataManager {
 		
 		var strUrl = "\(URL_BASE)\(strAction)"
 		
-		// TENIM PARÀMETRES EXTRA A LA URL?
+		// If we got extra parameters in url mean that we must use it (composed url that contains id's...)
 		if strActionWithParameters != "" {
 			strUrl = "\(URL_BASE)\(strActionWithParameters)"
 		}
@@ -53,7 +52,6 @@ class DataManager {
 			}
 		}
 		
-		// REQUEST MULTIPART?
 		manager.request(strUrl, method: method, parameters: parameters, encoding: method != .get ? JSONEncoding.default : URLEncoding.default).validate().responseData(completionHandler: { response in
 			self.manageResponse(response, strAction: strAction, method: method, parameters: parameters, completionHandler: completionHandler)
 		})
@@ -72,10 +70,8 @@ class DataManager {
 		}
 		
 		switch response.result {
-				// MARK: S'ha d'agafar l'id de la section i pasarho com a parametre
 			case .success(_):
 				let processResult = process(data: response.data, strAction: strAction, method: method)
-				// TODO: -- FINS AQUI!!!!!!!
 				completionHandler(response.result, method, nil, processResult)
 				
 			case .failure(let error):
@@ -87,7 +83,7 @@ class DataManager {
 					nsError = NSError.init(domain: error.localizedDescription, code: errorCode, userInfo: nil)
 					completionHandler(response.result, method, nsError, nil)
 #else
-					completionHandler(response.result,method, nil, "defaultErrorMsg".localized(), nil)
+					completionHandler(response.result,method, nil, nil)
 #endif
 				} else {
 #if DEBUG
@@ -95,7 +91,7 @@ class DataManager {
 					nsError = NSError.init(domain: error.localizedDescription, code: afError.responseCode ?? 1, userInfo: nil)
 					completionHandler(response.result, method, nsError, nil)
 #else
-					completionHandler(response.result,method, nil, "defaultErrorMsg".localized(), nil)
+					completionHandler(response.result,method, nil, nil)
 #endif
 					
 				}

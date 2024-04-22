@@ -2,7 +2,7 @@
 //  CharacterListFilterC.swift
 //  RickMortyDemo
 //
-//  Created by Avantiam on 17/4/24.
+//  Created by Sergio Rovira on 17/4/24.
 //
 
 import UIKit

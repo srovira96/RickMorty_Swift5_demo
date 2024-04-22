@@ -50,10 +50,10 @@ class CharacterListC: BaseC {
 	
 	
 	/// Array of filters to be aplied to ws call
-	private var filterApplyed:[Filter_Character_Types:Any] = [
-		.gender: [Character_Gender](),
-		.status: [Character_Status](),
-		.text: ""
+	private var filterApplyed:[Filter_Character_Types:Any?] = [
+		.gender: nil,
+		.status: nil,
+		.text: nil
 	] {
 		didSet {
 			// Set filter image if there are gender or status selected
@@ -191,8 +191,8 @@ class CharacterListC: BaseC {
 	@objc func openFilterScreen() {
 		// Configure 'filterVew' based on filters configuration
 		filterView = CharacterListFilterC(delegate: self, filterOptions: [
-			.gender(title: "character_gender".localized(), arrayData: Character_Gender.allCases, currentSelected: filterApplyed[.gender] as! [Character_Gender]),
-			.status(title: "character_status".localized(), arrayData: Character_Status.allCases, currentSelected: filterApplyed[.status] as! [Character_Status])
+			.gender(title: "character_gender".localized(), arrayData: Character_Gender.allCases, currentSelected: filterApplyed[.gender] as? [Character_Gender] ?? []),
+			.status(title: "character_status".localized(), arrayData: Character_Status.allCases, currentSelected: filterApplyed[.status] as? [Character_Status] ?? [])
 		])
 		self.present(filterView, animated: true)
 	}
@@ -351,9 +351,10 @@ extension CharacterListC: onCharacterTxtFilterView {
 				self.canRequestMorePages = true
 				self.pageToRequest = 1
 				self.ws_fetch_character_list(page: self.pageToRequest)
+				self.tableView.contentOffset = .init(x: 0, y: -self.tableView.contentInset.top)
 			} else {
 				// Remove filter
-				filterApplyed[.text] = ""
+				filterApplyed[.text] = nil
 			}
 		}
 	}
@@ -378,6 +379,7 @@ extension CharacterListC: onCharacterListFilterC {
 		self.canRequestMorePages = true
 		self.pageToRequest = 1
 		self.ws_fetch_character_list(page: self.pageToRequest)
+		self.tableView.contentOffset = .init(x: 0, y: -self.tableView.contentInset.top)
 	}
 	
 	func didUpdateFiltersSelected(arrayFilters: [filterType]) {
@@ -386,12 +388,13 @@ extension CharacterListC: onCharacterListFilterC {
 	
 	func didClearFilters() {
 		// Clear all data
-		filterApplyed[.gender] = []
-		filterApplyed[.status] = []
+		filterApplyed[.gender] = nil
+		filterApplyed[.status] = nil
 		// Perform new call reloading control parameters
 		self.canRequestMorePages = true
 		self.pageToRequest = 1
 		self.ws_fetch_character_list(page: self.pageToRequest)
+		self.tableView.contentOffset = .init(x: 0, y: -self.tableView.contentInset.top)
 	}
 	
 	
