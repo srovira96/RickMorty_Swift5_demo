@@ -106,8 +106,7 @@ class DataManager {
 	}
 	
 	func cancelTask(strAction: String) {
-		var strUrl = "\(URL_BASE)\(strAction)"
-		
+		let strUrl = "\(URL_BASE)\(strAction)"
 		manager.session.getAllTasks { (tasks) in
 			tasks.forEach({task in
 				if task.currentRequest?.url?.absoluteString == strUrl {
