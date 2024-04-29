@@ -51,8 +51,11 @@ class CharacterDetailC: BaseC {
 	// MARK: ============
 	//-----------------------
 	
+	/// Coordinator to manage navigation
 	var coordinator: CharacterCoordinator?
 	
+	/// View model
+	var viewModel : CharacterDetailViewModel!
 	
 	/// Boolean used on scrollDelegate methods to control and sync animations
 	var isDismissing:Bool = false
@@ -63,18 +66,18 @@ class CharacterDetailC: BaseC {
 	
 	
 	/// Character model data used in view
-	private var character:Character!
+	//private var character:Character!
 	
 	
 	//-----------------------
 	// MARK: - LIVE APP
 	//-----------------------
 	
-	init(character: Character!, imgReferenceView: UIView) {
+	init(viewModel: CharacterDetailViewModel , imgReferenceView: UIView) {
 		super.init(nibName: "CharacterDetailC", bundle: .main)
 		self.modalPresentationStyle = .overCurrentContext
 		self.modalTransitionStyle = .crossDissolve
-		self.character = character
+		self.viewModel = viewModel
 		self.imgReferenceView = imgReferenceView
 	}
 	
@@ -84,7 +87,11 @@ class CharacterDetailC: BaseC {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
+		
 		//ws_get_characterDetail()
+		
+		viewModel.delegate = self
+		viewModel.fetchCharacterDetail()
 		
 		print("SET BEGIN")
 		// VIEW ANIMATION BEGIN STATE
@@ -129,38 +136,6 @@ class CharacterDetailC: BaseC {
 		
 	}
 	
-	
-	//-----------------------
-	// MARK: - DATAMANAGER
-	//-----------------------
-	
-	/// API - WS used to get an specific character data
-	fileprivate func ws_get_characterDetail() {
-		API.shared.get_characterDetail(characterId: self.character.id) { result, method, error, array in
-			self.processWSResponse(strAction: WS_CHARACTER_DETAIL, result: result, method: method, error: error, array: array)
-		}
-	}
-	
-	override func processWSResponse(strAction: String, result: AFResult<Data>, method: HTTPMethod?, error: NSError?, array: [String:Any]?) {
-		switch result {
-			case .success:
-				if error != nil {
-					print("BaseC >>> processWSResponse\nWS = OK | Result = KO")
-				} else {
-					print("BaseC >>> processWSResponse\nWS = OK | Result = OK")
-					
-					if let fetchedCharacter = array?["character"] as? Character {
-						character = fetchedCharacter
-						setupView()
-					}
-				}
-			case .failure:
-				print("BaseC >>> processWSResponse\nWS = KO | Result = ?")
-		}
-	}
-	
-	
-	
 }
 
 
@@ -192,7 +167,7 @@ extension CharacterDetailC {
 	
 	/// Configure view content
 	private func setupView() {
-		self.title = String(format: "#%d", character.id)
+		self.title = String(format: "#%d", viewModel.character.id)
 		configBackButton()
 		
 		// DELEGATES --
@@ -228,29 +203,29 @@ extension CharacterDetailC {
 		
 		
 		// Content configuration
-		lblCharacterName.text = character.name
+		lblCharacterName.text = viewModel.character.name
 		
-		viewCharState.configView(uiImage: character.status.getStatusIcon(), strTitle: "character_status".localized(), strDesc: character.status.rawValue)
+		viewCharState.configView(uiImage: viewModel.character.status.getStatusIcon(), strTitle: "character_status".localized(), strDesc: viewModel.character.status.rawValue)
 		
-		viewCharGender.configView(uiImage: character.gender.getGenderIcon(), strTitle: "character_gender".localized(), strDesc: character.gender.rawValue)
+		viewCharGender.configView(uiImage: viewModel.character.gender.getGenderIcon(), strTitle: "character_gender".localized(), strDesc: viewModel.character.gender.rawValue)
 		
-		viewCharSpecie.configView(uiImage: UIImage(resource: .iconDna), strTitle: "character_specie".localized(), strDesc: character.species)
+		viewCharSpecie.configView(uiImage: UIImage(resource: .iconDna), strTitle: "character_specie".localized(), strDesc: viewModel.character.species)
 		
-		viewCharType.configView(uiImage: UIImage(resource: .iconType), strTitle: "character_type".localized(), strDesc: character.type == "" ? "??" : character.type)
+		viewCharType.configView(uiImage: UIImage(resource: .iconType), strTitle: "character_type".localized(), strDesc: viewModel.character.type == "" ? "??" : viewModel.character.type)
 		
-		if let location = character.location, let locationName = location.name {
+		if let location = viewModel.character.location, let locationName = location.name {
 			viewCharOrigin.configView(uiImage: UIImage(resource: .iconLocation), strTitle: "character_currentLocation".localized(), strDesc: locationName)
 		} else {
 			viewCharOrigin.isHidden = true
 		}
 		
-		if let origin = character.origin, let originName = origin.name {
+		if let origin = viewModel.character.origin, let originName = origin.name {
 			viewCharLocation.configView(uiImage: UIImage(resource: .iconLocation), strTitle: "character_origin".localized(), strDesc: originName)
 		} else {
 			viewCharLocation.isHidden = true
 		}
 		
-		if let strUrl = character.image, let url = URL(string: strUrl) {
+		if let strUrl = viewModel.character.image, let url = URL(string: strUrl) {
 			imgCharacter.af.setImage(withURL: url, placeholderImage: UIImage.init(resource: .imgPlaceholder), imageTransition: .crossDissolve(0.3), runImageTransitionIfCached: false)
 		} else {
 			imgCharacter.image = UIImage.init(resource: .imgPlaceholder)
@@ -306,9 +281,8 @@ extension CharacterDetailC {
 			self.viewContent.alpha = 0
 			self.viewBackground.alpha = 0
 			self.btnClose.alpha = 0
-		}) { _ in
-			self.dismiss(animated: true)
-		}
+		})
+		self.dismiss(animated: true)
 	}
 	
 	
@@ -324,3 +298,12 @@ extension CharacterDetailC {
 	
 }
 
+extension CharacterDetailC: onCharacterDetailViewModel {
+	func onModelUpdated() {
+		setupView()
+	}
+	
+	func onError() {
+		// No actions performed
+	}
+}

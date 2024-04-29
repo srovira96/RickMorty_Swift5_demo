@@ -8,27 +8,9 @@
 import UIKit
 
 
-enum Filter_Character_Types: Equatable {
-	case text
-	case status
-	case gender
-	
-	func get_ws_param() -> String {
-		switch self {
-			case .text:
-				return "name"
-			case .status:
-				return "status"
-			case .gender:
-				return "gender"
-		}
-	}
-}
-
 
 protocol onCharacterListFilterC {
 	func didSelectFilters(arrayFilters:[filterType])
-	func didUpdateFiltersSelected(arrayFilters:[filterType])
 	func didClearFilters()
 }
 
@@ -61,11 +43,10 @@ class CharacterListFilterC: UIViewController {
 	// MARK: ============
 	//-----------------------
 	
-	/// Array of filterType that will be used to configure view content
-	private var arrayFilterOptions: [filterType] = []
-	
 	/// Delegate that will recive all filtered data
-	private var delegate: onCharacterListFilterC!
+	private var delegate: onCharacterListFilterC?
+	
+	private var viewModel: CharacterListFilterViewModel!
 	
 	//-----------------------
 	// MARK: - LIVE APP
@@ -76,13 +57,13 @@ class CharacterListFilterC: UIViewController {
 	/// - Parameters:
 	///   - delegate: Delgate that will revice filtered data
 	///   - filterOptions: Arrat of filterType that will be used to configure view content
-	init(delegate: onCharacterListFilterC, filterOptions: [filterType]) {
+	init(delegate: onCharacterListFilterC? = nil, viewModel: CharacterListFilterViewModel) {
 		super.init(nibName: "CharacterListFilterC", bundle: .main)
 		modalTransitionStyle = .coverVertical
 		modalPresentationStyle = .pageSheet
 		isModalInPresentation = true
 		self.delegate = delegate
-		self.arrayFilterOptions = filterOptions
+		self.viewModel = viewModel
 	}
 	
 	required init?(coder: NSCoder) {
@@ -130,7 +111,7 @@ class CharacterListFilterC: UIViewController {
 		
 		// Config stack views bases on arrayFilterOptions data provided
 		stackFilterContent.subviews.forEach({$0.removeFromSuperview()})
-		for filter in arrayFilterOptions {
+		for filter in viewModel.arrayFilterOptions {
 			let nview = FilterBoxView()
 			nview.configView(self, delegate: self, type: filter)
 			stackFilterContent.addArrangedSubview(nview)
@@ -165,7 +146,7 @@ class CharacterListFilterC: UIViewController {
 	/// ACTION: Send onCharacterListFilterC > didClearFilters to delegate attached to controller
 	@IBAction func btnClearFiltersAction(_ sender: UIButton) {
 		Vibration.light.vibrate()
-		delegate.didClearFilters()
+		delegate?.didClearFilters()
 		self.dismiss(animated: true)
 	}
 	

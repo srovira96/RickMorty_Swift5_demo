@@ -81,12 +81,41 @@ class CharactersApiClient {
 					}
 				case .failure(let failure):
 					print(failure.localizedDescription)
-					completion(.failure(.networkError))
+					if failure.responseCode == 404 {
+						completion(.success(.init(info: nil, results: [])))
+					} else {
+						completion(.failure(.networkError))
+					}
 			}
 		}
 		
 	}
 	
+	
+	func fetchCharacterDetail(_ id: Int64, completion: @escaping(Result<Character, CharacterAPIError>) -> ()) {
+		
+		let partialUrl = String(format: WS_CHARACTER_DETAIL, id)
+		
+		let url = String(format: "%@%@", URL_BASE, partialUrl)
+		
+		manager.request(url, method: .get, encoding: URLEncoding.default).validate().responseData { response in
+			switch response.result {
+				case .success(let data):
+					do  {
+						let wsResponse = try JSONDecoder().decode(Character.self, from: data)
+						completion(.success(wsResponse))
+					} catch (let error) {
+						print(error.localizedDescription)
+						completion(.failure(.decodingError))
+					}
+				case .failure(let failure):
+					print(failure.localizedDescription)
+					completion(.failure(.networkError))
+			}
+		}
+		
+		
+	}
 }
 
 
@@ -101,3 +130,5 @@ extension CharactersApiClient {
 		}
 	}
 }
+
+

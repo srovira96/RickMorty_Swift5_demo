@@ -19,6 +19,11 @@ class CharacterListTableDataSource: NSObject, UITableViewDelegate, UITableViewDa
 	var coordinator: CharacterCoordinator?
 	var onBottomPaginationAction: (() -> Void)
 	
+	/// CharacterListTableDataSource init
+	/// - Parameters:
+	///   - arrayCharacters: array of characters to show
+	///   - coordinator: Corrdinator to manage navigation
+	///   - onBottomPaginationAction: Action performed when scroll view reach viewCells.count - 4. (Used to request new characters. Pagination)
 	init(arrayCharacters: [Character], coordinator: CharacterCoordinator? = nil, onBottomPaginationAction: @escaping () -> Void) {
 		self.arrayCharacters = arrayCharacters
 		self.coordinator = coordinator
@@ -60,16 +65,11 @@ class CharacterListTableDataSource: NSObject, UITableViewDelegate, UITableViewDa
 	func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
 		// Check if cell exists and have contentView to animate
 		if let cell = tableView.cellForRow(at: indexPath), let castCellView = cell as? CharacterListCell {
-			// Make view bounce
-			//castCellView.bounce()
-			
 			// Apply interaction feedback
 			Vibration.soft.vibrate()
 			
-			// View reaction after 0.2s
-			DispatchQueue.main.asyncAfter(deadline: .now() + 0, execute: {
-				self.coordinator?.showCharacterDetail(self.arrayCharacters[indexPath.row], referenceView: castCellView.imgCharacter)
-			})
+			// Navigation through coordinator pattern
+			self.coordinator?.showCharacterDetail(self.arrayCharacters[indexPath.row], referenceView: castCellView.imgCharacter)
 			
 		}
 	}

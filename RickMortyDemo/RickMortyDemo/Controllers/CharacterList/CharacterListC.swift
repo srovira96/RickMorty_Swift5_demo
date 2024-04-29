@@ -36,54 +36,32 @@ class CharacterListC: BaseC {
 	// MARK: ============
 	//-----------------------
 	
+	/// Coordinator to perform navigation changes
 	var coordinator: CharacterCoordinator?
-	var characterViewModel: CharacterListViewModel!
 	
+	/// View model that holds all view data
+	var viewModel: CharacterListViewModel!
+	
+	//var filterViewModel: CharacterListFilterViewModel!
+	
+	/// Data source that holds UITableView information (Content: Character list)
 	var tableDataSource:CharacterListTableDataSource!
 	
 	/// UIViewController that allow user filter content
 	private var filterView:CharacterListFilterC!
 
-	
-	/// Array of filters to be aplied to ws call
-	private var filterApplyed:[Filter_Character_Types:Any?] = [
-		.gender: nil,
-		.status: nil,
-		.text: nil
-	] {
-		didSet {
-			// Set filter image if there are gender or status selected
-			if ((filterApplyed[.gender] as? [Character_Gender])?.isEmpty ?? true) && ((filterApplyed[.status] as? [Character_Status])?.isEmpty ?? true) {
-				let image = UIImage(resource: .iconFilter).withRenderingMode(.alwaysTemplate)
-				image.withTintColor(.COLOR_SECONDARY)
-				let filterNavButton = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(self.openFilterScreen))
-				filterNavButton.tintColor = .COLOR_SECONDARY
-				self.navigationItem.rightBarButtonItem = filterNavButton
-			} else {
-				let image = UIImage(resource: .iconFilterFilled).withRenderingMode(.alwaysTemplate)
-				image.withTintColor(.COLOR_SECONDARY)
-				let filterNavButton = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(self.openFilterScreen))
-				filterNavButton.tintColor = .COLOR_SECONDARY
-				self.navigationItem.rightBarButtonItem = filterNavButton
-			}
-		}
-	}
-	
-	
 	/// Variable that holds the last contentOffset observed by tableView to manage viewContentFilter visibility
 	private var lastContentOffset: CGFloat = 0
 	
-	/// Array of characters
-	private var arrayCharacters : [Character] = []
 	
 	//-----------------------
 	// MARK: - LIVE APP
 	//-----------------------
 	
-	init(characterListViewModel: CharacterListViewModel) {
+	init(viewModel: CharacterListViewModel) {
 		super.init(nibName: "CharacterListC", bundle: .main)
-		self.characterViewModel = characterListViewModel
-		self.characterViewModel.delegate = self
+		self.viewModel = viewModel
+		self.viewModel.delegate = self
 	}
 	
 	required init?(coder: NSCoder) {
@@ -96,12 +74,11 @@ class CharacterListC: BaseC {
 		navBarColor = .clear
 		self.title = "character_list_title".localized()
 		
-		tableDataSource = .init(arrayCharacters: characterViewModel.characterList, coordinator: coordinator, onBottomPaginationAction: {
-			self.model_fetchData()
+		tableDataSource = .init(arrayCharacters: viewModel.characterList, coordinator: coordinator, onBottomPaginationAction: {
+			self.viewModel.fetchChatacterList()
 		})
 		tableView.dataSource = tableDataSource
 		tableView.delegate = tableDataSource
-		
 		
 		// VIEWS SETUP
 		viewLoading.alpha = 1
@@ -112,8 +89,8 @@ class CharacterListC: BaseC {
 		viewEmpty.configView()
 		viewError.configView(self, action: {
 			self.showView(type: .viewLoading)
-			self.characterViewModel.resetModel()
-			self.model_fetchData()
+			self.viewModel.resetCharacterModel()
+			self.viewModel.fetchChatacterList()
 		})
 		
 		// View txt filter configuration (delegate)
@@ -137,7 +114,7 @@ class CharacterListC: BaseC {
 	
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
-		model_fetchData()
+		viewModel.fetchChatacterList()
 		tableView.reloadData()
 	}
 	
@@ -146,9 +123,9 @@ class CharacterListC: BaseC {
 	//-----------------------
 	
 	
-	func model_fetchData() {
-		characterViewModel.fetchChatacterList(with: self.filterApplyed)
-	}
+	/*func model_fetchData() {
+		characterViewModel.fetchChatacterList()
+	}*/
 	
 	/// Method to switch between views
 	/// - Parameters:
@@ -197,11 +174,12 @@ class CharacterListC: BaseC {
 	/// ACTION - Open CharacterFilterView
 	@objc func openFilterScreen() {
 		// Configure 'filterVew' based on filters configuration
-		filterView = CharacterListFilterC(delegate: self, filterOptions: [
-			.gender(title: "character_gender".localized(), arrayData: Character_Gender.allCases, currentSelected: filterApplyed[.gender] as? [Character_Gender] ?? []),
-			.status(title: "character_status".localized(), arrayData: Character_Status.allCases, currentSelected: filterApplyed[.status] as? [Character_Status] ?? [])
+		//filterView = CharacterListFilterC(delegate: self, viewModel: filterViewModel)
+		//self.present(filterView, animated: true)
+		coordinator?.showCharacterFilterModal(delegate: self, withSelectedOptions: [
+			.gender(title: "character_gender".localized(), arrayData: Character_Gender.allCases, currentSelected: viewModel.filterApplyed[.gender] as? [Character_Gender] ?? []),
+			.status(title: "character_status".localized(), arrayData: Character_Status.allCases, currentSelected: viewModel.filterApplyed[.status] as? [Character_Status] ?? [])
 		])
-		self.present(filterView, animated: true)
 	}
 	
 	
@@ -239,22 +217,27 @@ extension CharacterListC {
 extension CharacterListC: onCharacterTxtFilterView {
 	func didChangeSearchValue(_ value: String?) {
 		// Check if filter is already applied
-		if filterApplyed[.text] != nil {
+		
+		viewModel.setTextFilterOption(value)
+		viewModel.resetCharacterModel()
+		viewModel.fetchChatacterList()
+		
+		/*if characterViewModel.filterApplyed[.text] != nil {
 			if let value {
 				// Modify current filter .text value and call ws
-				filterApplyed[.text] = value
+				characterViewModel.filterApplyed[.text] = value
 				
 				// Fetch
-				characterViewModel.resetModel()
+				characterViewModel.resetCharacterModel()
 				self.model_fetchData()
 				// -- fetch
 				
 				self.tableView.contentOffset = .init(x: 0, y: -self.tableView.contentInset.top)
 			} else {
 				// Remove filter
-				filterApplyed[.text] = nil
+				characterViewModel.filterApplyed[.text] = nil
 			}
-		}
+		}*/
 	}
 }
 
@@ -262,35 +245,21 @@ extension CharacterListC: onCharacterTxtFilterView {
 extension CharacterListC: onCharacterListFilterC {
 	func didSelectFilters(arrayFilters: [filterType]) {
 		// Set all filter data retrived by 'arrayFilters' by type
-		for filter in arrayFilters {
-			switch filter {
-				case .gender(_, _, let currentSelected):
-					filterApplyed[.gender] = currentSelected
-				case .status(_, _, let currentSelected):
-					filterApplyed[.status] = currentSelected
-				case .none:
-					break
-			}
-		}
+		viewModel.setFilterOptions(arrayFilters: arrayFilters)
 		// Perform new call reloading control parameters
-		characterViewModel.resetModel()
-		model_fetchData()
+		viewModel.resetCharacterModel()
+		viewModel.fetchChatacterList()
 		
 		self.tableView.contentOffset = .init(x: 0, y: -self.tableView.contentInset.top)
 	}
 	
-	func didUpdateFiltersSelected(arrayFilters: [filterType]) {
-		// unused
-	}
-	
 	func didClearFilters() {
 		// Clear all data
-		filterApplyed[.gender] = nil
-		filterApplyed[.status] = nil
+		viewModel.resetFilterModel()
 		
 		// Perform new call reloading control parameters
-		characterViewModel.resetModel()
-		model_fetchData()
+		viewModel.resetCharacterModel()
+		viewModel.fetchChatacterList()
 		
 		self.tableView.contentOffset = .init(x: 0, y: -self.tableView.contentInset.top)
 	}
@@ -299,16 +268,35 @@ extension CharacterListC: onCharacterListFilterC {
 
 extension CharacterListC: onCharacterListViewModel {
 	func onModelUpdated() {
-		tableDataSource.arrayCharacters = characterViewModel.characterList
+		viewCharacterTxtFilter.stopLoadingAnimator()
+		tableDataSource.arrayCharacters = viewModel.characterList
 		tableView.reloadData()
-		if characterViewModel.characterList.isEmpty {
+		if viewModel.characterList.isEmpty {
 			showView(type: .viewEmpty)
 		} else {
 			showView(type: .viewContent)
 		}
 	}
+	
 	func onError() {
 		print("❌ Error")
 		showView(type: .viewError)
+	}
+	
+	func onUpdateFilerData() {
+		// Set filter image if there are gender or status selected
+		if ((viewModel.filterApplyed[.gender] as? [Character_Gender])?.isEmpty ?? true) && ((viewModel.filterApplyed[.status] as? [Character_Status])?.isEmpty ?? true) {
+			let image = UIImage(resource: .iconFilter).withRenderingMode(.alwaysTemplate)
+			image.withTintColor(.COLOR_SECONDARY)
+			let filterNavButton = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(self.openFilterScreen))
+			filterNavButton.tintColor = .COLOR_SECONDARY
+			self.navigationItem.rightBarButtonItem = filterNavButton
+		} else {
+			let image = UIImage(resource: .iconFilterFilled).withRenderingMode(.alwaysTemplate)
+			image.withTintColor(.COLOR_SECONDARY)
+			let filterNavButton = UIBarButtonItem(image: image, style: .plain, target: self, action: #selector(self.openFilterScreen))
+			filterNavButton.tintColor = .COLOR_SECONDARY
+			self.navigationItem.rightBarButtonItem = filterNavButton
+		}
 	}
 }
