@@ -113,7 +113,7 @@ class CharacterListFilterC: UIViewController {
 		stackFilterContent.subviews.forEach({$0.removeFromSuperview()})
 		for filter in viewModel.arrayFilterOptions {
 			let nview = FilterBoxView()
-			nview.configView(self, delegate: self, type: filter)
+			nview.configView(self, type: filter)
 			stackFilterContent.addArrangedSubview(nview)
 		}
 		
@@ -157,8 +157,4 @@ class CharacterListFilterC: UIViewController {
 	}
 	
 
-}
-
-extension CharacterListFilterC: onFilterBoxViewDelegate {
-	func didSelectRow() {}
 }

@@ -295,7 +295,6 @@ extension CharacterDetailC {
 		dismissAnimation()
 	}
 	
-	
 }
 
 extension CharacterDetailC: onCharacterDetailViewModel {
@@ -304,6 +303,6 @@ extension CharacterDetailC: onCharacterDetailViewModel {
 	}
 	
 	func onError() {
-		// No actions performed
+		// No actions performed, at this point we got all data and won't show any feetback because detail don't return additional data.
 	}
 }

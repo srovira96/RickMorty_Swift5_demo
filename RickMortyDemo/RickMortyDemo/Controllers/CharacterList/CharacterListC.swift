@@ -109,7 +109,6 @@ class CharacterListC: BaseC {
 		tableView.contentInset.top = 70
 		// --- style
 		
-		
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -122,10 +121,6 @@ class CharacterListC: BaseC {
 	// MARK: - METHODS
 	//-----------------------
 	
-	
-	/*func model_fetchData() {
-		characterViewModel.fetchChatacterList()
-	}*/
 	
 	/// Method to switch between views
 	/// - Parameters:
@@ -174,8 +169,6 @@ class CharacterListC: BaseC {
 	/// ACTION - Open CharacterFilterView
 	@objc func openFilterScreen() {
 		// Configure 'filterVew' based on filters configuration
-		//filterView = CharacterListFilterC(delegate: self, viewModel: filterViewModel)
-		//self.present(filterView, animated: true)
 		coordinator?.showCharacterFilterModal(delegate: self, withSelectedOptions: [
 			.gender(title: "character_gender".localized(), arrayData: Character_Gender.allCases, currentSelected: viewModel.filterApplyed[.gender] as? [Character_Gender] ?? []),
 			.status(title: "character_status".localized(), arrayData: Character_Status.allCases, currentSelected: viewModel.filterApplyed[.status] as? [Character_Status] ?? [])
@@ -216,28 +209,12 @@ extension CharacterListC {
 
 extension CharacterListC: onCharacterTxtFilterView {
 	func didChangeSearchValue(_ value: String?) {
-		// Check if filter is already applied
-		
+		// Set new text filter to search also by name
 		viewModel.setTextFilterOption(value)
+		// Reset viewModel to perform clean fetch
 		viewModel.resetCharacterModel()
+		// Fetch characters with new viewModel data
 		viewModel.fetchChatacterList()
-		
-		/*if characterViewModel.filterApplyed[.text] != nil {
-			if let value {
-				// Modify current filter .text value and call ws
-				characterViewModel.filterApplyed[.text] = value
-				
-				// Fetch
-				characterViewModel.resetCharacterModel()
-				self.model_fetchData()
-				// -- fetch
-				
-				self.tableView.contentOffset = .init(x: 0, y: -self.tableView.contentInset.top)
-			} else {
-				// Remove filter
-				characterViewModel.filterApplyed[.text] = nil
-			}
-		}*/
 	}
 }
 
@@ -248,6 +225,7 @@ extension CharacterListC: onCharacterListFilterC {
 		viewModel.setFilterOptions(arrayFilters: arrayFilters)
 		// Perform new call reloading control parameters
 		viewModel.resetCharacterModel()
+		// Fetch characters with new viewModel data
 		viewModel.fetchChatacterList()
 		
 		self.tableView.contentOffset = .init(x: 0, y: -self.tableView.contentInset.top)

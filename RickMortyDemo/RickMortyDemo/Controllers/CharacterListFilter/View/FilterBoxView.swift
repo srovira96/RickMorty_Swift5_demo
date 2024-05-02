@@ -20,10 +20,6 @@ struct filterElement {
 	var isSelected:Bool = false
 }
 
-protocol onFilterBoxViewDelegate {
-	func didSelectRow()
-}
-
 class FilterBoxView: UIView {
 	
 	//-----------------------
@@ -61,9 +57,6 @@ class FilterBoxView: UIView {
 	
 	/// Elements to be listed on collectionView
 	private var elements:[filterElement] = []
-	
-	/// Delegate that will recive data
-	var delegate:onFilterBoxViewDelegate? = nil
 	
 	//-----------------------
 	// MARK: - LIVE APP
@@ -139,10 +132,9 @@ class FilterBoxView: UIView {
 	///   - cont: Controller that will use the view
 	///   - delegate: Delegate that will recive data collected
 	///   - type: Type of filter to be desplayed with all data
-	func configView(_ cont: UIViewController, delegate: onFilterBoxViewDelegate? = nil, type: filterType) {
+	func configView(_ cont: UIViewController, type: filterType) {
 		self.fromController = cont
 		self.filterType = type
-		self.delegate = delegate
 		
 		// Clear elements (prevent reuse troubles)
 		elements.removeAll()
@@ -249,11 +241,9 @@ extension FilterBoxView: UICollectionViewDelegate, UICollectionViewDataSource {
 		}
 		collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .top)
 		Vibration.selection.vibrate()
-		delegate?.didSelectRow()
 	}
 	
 	func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
 		Vibration.selection.vibrate()
-		delegate?.didSelectRow()
 	}
 }

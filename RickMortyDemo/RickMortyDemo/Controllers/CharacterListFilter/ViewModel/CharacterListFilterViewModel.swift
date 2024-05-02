@@ -27,8 +27,18 @@ enum Filter_Character_Types: Equatable {
 
 class CharacterListFilterViewModel {
 	
+	//-----------------------
+	// MARK: Variables
+	// MARK: ============
+	//-----------------------
+	
 	/// Array of filterType that will be used to configure view content
 	var arrayFilterOptions: [filterType] = []
+	
+	
+	//-----------------------
+	// MARK: - LIVE APP
+	//-----------------------
 	
 	init(arrayFilterOptions: [filterType]) {
 		self.arrayFilterOptions = arrayFilterOptions

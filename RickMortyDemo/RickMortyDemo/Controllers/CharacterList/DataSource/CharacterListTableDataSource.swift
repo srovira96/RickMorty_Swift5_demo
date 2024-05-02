@@ -15,8 +15,13 @@ class CharacterListTableDataSource: NSObject, UITableViewDelegate, UITableViewDa
 	// MARK: ============
 	//-----------------------
 	
+	/// Array of characters to be showd by tableView
 	var arrayCharacters:[Character]
+	
+	/// Coordinator to manage navigation
 	var coordinator: CharacterCoordinator?
+	
+	/// Action to be formed when user reach 'arrayCharacters.count - 4'  elements
 	var onBottomPaginationAction: (() -> Void)
 	
 	/// CharacterListTableDataSource init

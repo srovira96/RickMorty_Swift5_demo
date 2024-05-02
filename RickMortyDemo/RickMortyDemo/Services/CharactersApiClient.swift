@@ -15,8 +15,6 @@ enum CharacterAPIError: Error {
 }
 
 
-
-
 class CharactersApiClient {
 	private var manager         : Session
 	
@@ -69,10 +67,12 @@ class CharactersApiClient {
 		}
 		// -- end filter
 		
+		// Request
 		manager.request(url, method: .get, parameters: params, encoding: URLEncoding.default).validate().responseData { response in
 			switch response.result {
 				case .success(let data):
 					do  {
+						// Decode result into repsonse model
 						let wsResponse = try JSONDecoder().decode(WS_RESP_CHARACTER_LIST.self, from: data)
 						completion(.success(wsResponse))
 					} catch (let error) {
@@ -88,20 +88,26 @@ class CharactersApiClient {
 					}
 			}
 		}
+		// -- end request
 		
 	}
 	
 	
+	/// Fetch character detail with giving id
+	/// - Parameters:
+	///   - id: Int64 - Id from character to retrieve data
+	///   - completion: Result<Character, CharacterAPIError> of WS call
 	func fetchCharacterDetail(_ id: Int64, completion: @escaping(Result<Character, CharacterAPIError>) -> ()) {
-		
+		// Format action with given id
 		let partialUrl = String(format: WS_CHARACTER_DETAIL, id)
-		
+		// Compose full url
 		let url = String(format: "%@%@", URL_BASE, partialUrl)
-		
+		// Request
 		manager.request(url, method: .get, encoding: URLEncoding.default).validate().responseData { response in
 			switch response.result {
 				case .success(let data):
 					do  {
+						// Decode result into response model
 						let wsResponse = try JSONDecoder().decode(Character.self, from: data)
 						completion(.success(wsResponse))
 					} catch (let error) {
@@ -113,7 +119,7 @@ class CharactersApiClient {
 					completion(.failure(.networkError))
 			}
 		}
-		
+		// -- end Request
 		
 	}
 }
